@@ -48,6 +48,26 @@ claude mcp add --scope user --transport stdio qwen-vision -- \
 
 然后 **重启 Claude Code**（MCP 服务器只在启动时加载）。
 
+## 注册到 DeepSeek Harness (dsh)
+
+在 profile 的用户补丁层（如 `C:\Users\<你>\.dsh\profiles\web\cordis.patch.yml`）里**新增**一条 MCP 客户端插件：
+
+```yaml
+- insert:
+    - id: mcp-qwen-vision
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: qwen-vision
+        transport: stdio
+        command: 'C:\path\to\qwen-vision-mcp\.venv\Scripts\python.exe'
+        args: ['C:\path\to\qwen-vision-mcp\server.py']
+```
+
+> ⚠️ **必须用 `insert:` 语法**。dsh 的 patch 机制里，普通 `id:` 条目只用于**覆盖已存在的插件行**；指向不存在的 id 会被**静默跳过**（日志里仅一条 warning），插件不加载也不报错——排查时极易忽略。
+
+保存后 dsh 通过 HMR 热重载补丁，**无需重启**。注册成功后模型会看到
+`mcp__qwen-vision__analyze_image` / `mcp__qwen-vision__analyze_images_batch` 两个工具。
+
 ## 用法示例
 
 在 Claude Code 会话里直接说：
@@ -74,6 +94,7 @@ bench.py           # 并行 vs 串行基准测试
 requirements.txt
 .env.example
 docs/setup-notes.md  # 搭建过程、踩坑与性能实测
+docs/prompt-templates.md  # 图片识别提示词模板（详/标/简/定向四版 + 调整原则）
 ```
 
 ## License
